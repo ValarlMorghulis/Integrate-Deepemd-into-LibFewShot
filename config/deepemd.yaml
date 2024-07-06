@@ -1,0 +1,67 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+
+n_gpu: 1
+device_ids: 0
+seed: 1
+episode_size: 1
+image_size: 84
+batch_size: 1
+
+epoch: 100
+
+test_episode: 1000   # test/val n_episodes, number of episodes in meta val
+train_episode: 50
+query_num: 15
+shot_num: 1
+way_num: 5
+
+augment: true
+augment_times: 1
+augment_times_query: 1
+augment_method: DeepEmdAugment
+
+backbone:
+  name: resnet12emd
+  kwargs: ~
+
+classifier:
+  name: DeepEMD
+  kwargs: 
+    mode: FCN # choices=['FCN', 'Grid', 'Sampling']
+    solver: opencv # choices=['opencv', 'qpth']
+    temperature: 12.5
+    norm: center
+    metric: cosine # choices=['cosine', 'l2']
+    form: QP # two ways to use the QPTH for solving EMD, choices=['QP', 'L2']. see codes for detail
+    l2_strength: 0.0001 # the weight for omitting the quadratic term in the form 'L2'
+    sfc_update_step: 100  # number of updating step of SFC
+    sfc_bs: 4      # batch size of finetune SFC
+    sfc_lr: 0.1    # learning rate of SFC
+    # DeepEMD-FCN Only
+    feature_pyramid: 5,2,1
+    # DeepEMD-Grid and DeepEMD-Sampling Only
+    patch_list: ~
+
+pretrain_path: ./results/DeepEMD_Pretrain-miniImageNet--ravi-resnet12emd-5-1-May-28-2024-19-43-29/checkpoints/emb_func_best.pth
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.0005
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 10
+
+save_part:
+  - emb_func
